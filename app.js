@@ -155,7 +155,7 @@ $(document).ready(function() {
 });
 
 function configure() {
-  const popupUrl = `${window.location.origin}/configure.html`;
+  const popupUrl = window.location.origin + "configure.html";
   tableau.extensions.ui
     .displayDialogAsync(popupUrl, "Payload Message", {
       height: 500,
