@@ -16,7 +16,8 @@ $(document).ready(function() {
         let node2idx = 1; //dataTable.columns.find(column => column.fieldName === "node2").index;
         let nodelist = [];
         let edgelist = [];
-        for (let row of dataTable.data) {
+        for (let i = 0; i < dataTable.data.length; i++) {
+          let row = dataTable.data[i];
           nodelist.push(row[node1idx].value);
           nodelist.push(row[node2idx].value);
           edgelist.push([
