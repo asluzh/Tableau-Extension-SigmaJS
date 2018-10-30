@@ -2,10 +2,12 @@ $(document).ready(function() {
   tableau.extensions.initializeAsync({ configure: configure }).then(function() {
     // define an empty graph
     const inputWs = tableau.extensions.dashboardContent.dashboard.worksheets.find(
-      w => w.name.substr(0, 5) === "Graph"
+      function(w) {
+        return w.name.substr(0, 5) === "Graph";
+      }
     );
     var renderGraph = function() {
-      inputWs.getSummaryDataAsync().then(dataTable => {
+      inputWs.getSummaryDataAsync().then(function(dataTable) {
         var g = {
           nodes: [],
           edges: []
@@ -25,7 +27,9 @@ $(document).ready(function() {
         }
         let icons = ["\uF1AD", "\uF187", "\uF021", "\uF007"];
         let colors = ["#338", "#833"];
-        let nodevalues = nodelist.filter((el, i, arr) => arr.indexOf(el) === i); // unique
+        let nodevalues = nodelist.filter(function(el, i, arr) {
+          return arr.indexOf(el) === i;
+        }); // unique
         // console.log(nodevalues);
         for (let i = 0; i < nodevalues.length; i++)
           g.nodes.push({
@@ -119,8 +123,8 @@ $(document).ready(function() {
     );
     tableau.extensions.dashboardContent.dashboard
       .getParametersAsync()
-      .then(parameters => {
-        parameters.forEach(p => {
+      .then(function(parameters) {
+        parameters.forEach(function(p) {
           if (p.name === "Max Node") {
             p.addEventListener(
               tableau.TableauEventType.ParameterChanged,
@@ -144,7 +148,7 @@ $(document).ready(function() {
 
     tableau.extensions.settings.addEventListener(
       tableau.TableauEventType.SettingsChanged,
-      settingsEvent => {}
+      function(settingsEvent) {}
     );
   });
 });
@@ -156,8 +160,8 @@ function configure() {
       height: 500,
       width: 500
     })
-    .then(closePayload => {})
-    .catch(error => {
+    .then(function(closePayload) {})
+    .catch(function(error) {
       switch (error.errorCode) {
         case tableau.ErrorCodes.DialogClosedByUser:
           console.log("Dialog was closed by user");
