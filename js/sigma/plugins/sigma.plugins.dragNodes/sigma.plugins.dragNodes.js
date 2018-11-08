@@ -1,7 +1,7 @@
 /**
  * This plugin provides a method to drag & drop nodes. Check the
- * sigma.plugins.dragNodes function doc or the examples/basic.html &
- * examples/api-candy.html code samples to know more.
+ * sigma.plugins.dragNodes function doc or the examples/drag-nodes.html code
+ * sample to know more.
  */
 (function() {
   'use strict';
@@ -30,46 +30,43 @@
    *
    * Recognized parameters:
    * **********************
-   * @param  {sigma}    s        The related sigma instance.
-   * @param  {renderer} renderer The related renderer instance.
+   * @param  {sigma}                      s        The related sigma instance.
+   * @param  {renderer}                   renderer The related renderer instance.
+   * @param  {?sigma.plugins.activeState} a        The activeState plugin instance.
    */
-  function DragNodes(s, renderer) {
+  function DragNodes(s, renderer, a) {
     sigma.classes.dispatcher.extend(this);
 
     // A quick hardcoded rule to prevent people from using this plugin with the
     // WebGL renderer (which is impossible at the moment):
-    // if (
-    //   sigma.renderers.webgl &&
-    //   renderer instanceof sigma.renderers.webgl
-    // )
-    //   throw new Error(
-    //     'The sigma.plugins.dragNodes is not compatible with the WebGL renderer'
-    //   );
+    if (
+      sigma.renderers.webgl &&
+      renderer instanceof sigma.renderers.webgl
+    )
+      throw new Error(
+        'The sigma.plugins.dragNodes is not compatible with the WebGL renderer'
+      );
 
     // Init variables:
     var _self = this,
       _s = s,
+      _a = a,
       _body = document.body,
       _renderer = renderer,
       _mouse = renderer.container.lastChild,
       _camera = renderer.camera,
       _node = null,
-      _prefix = '',
+      _draggingNode = null,
+      _prefix = renderer.options.prefix,
       _hoverStack = [],
       _hoverIndex = {},
       _isMouseDown = false,
       _isMouseOverCanvas = false,
-      _drag = false;
+      _drag = false,
+      _stickiness = s.settings('dragNodeStickiness');
 
     if (renderer instanceof sigma.renderers.svg) {
         _mouse = renderer.container.firstChild;
-    }
-
-    // It removes the initial substring ('read_') if it's a WegGL renderer.
-    if (renderer instanceof sigma.renderers.webgl) {
-      _prefix = renderer.options.prefix.substr(5);
-    } else {
-      _prefix = renderer.options.prefix;
     }
 
     renderer.bind('overNode', nodeMouseOver);
@@ -113,6 +110,14 @@
       if (!_hoverStack.length) {
         _node = null;
       }
+      else {
+        // Drag node right after click instead of needing mouse out + mouse over:
+        setTimeout(function() {
+          // Set the current node to be the last one in the array
+          _node = _hoverStack[_hoverStack.length - 1];
+          _mouse.addEventListener('mousedown', nodeMouseDown);
+        }, 0);
+      }
     };
 
     function nodeMouseOver(event) {
@@ -125,7 +130,7 @@
       _hoverStack.push(event.data.node);
       _hoverIndex[event.data.node.id] = true;
 
-      if(_hoverStack.length && ! _isMouseDown) {
+      if(!_isMouseDown) {
         // Set the current node to be the last one in the array
         _node = _hoverStack[_hoverStack.length - 1];
         _mouse.addEventListener('mousedown', nodeMouseDown);
@@ -147,30 +152,16 @@
     };
 
     function nodeMouseDown(event) {
-      _isMouseDown = true;
-      var size = _s.graph.nodes().length;
+      if(event.which == 3) return; // Right mouse button pressed
 
-      // when there is only node in the graph, the plugin cannot apply
-      // linear interpolation. So treat it as if a user is dragging
-      // the graph
-      if (_node && size > 1) {
+      _isMouseDown = true;
+      if (_node && _s.graph.nodes().length > 0) {
         _mouse.removeEventListener('mousedown', nodeMouseDown);
         _body.addEventListener('mousemove', nodeMouseMove);
         _body.addEventListener('mouseup', nodeMouseUp);
 
-        // Do not refresh edgequadtree during drag:
-        var k,
-            c;
-        for (k in _s.cameras) {
-          c = _s.cameras[k];
-          if (c.edgequadtree !== undefined) {
-            c.edgequadtree._enabled = false;
-          }
-        }
-
         // Deactivate drag graph.
         _renderer.settings({mouseEnabled: false, enableHovering: false});
-        _s.refresh();
 
         _self.dispatchEvent('startdrag', {
           node: _node,
@@ -186,19 +177,8 @@
       _body.removeEventListener('mousemove', nodeMouseMove);
       _body.removeEventListener('mouseup', nodeMouseUp);
 
-      // Allow to refresh edgequadtree:
-      var k,
-          c;
-      for (k in _s.cameras) {
-        c = _s.cameras[k];
-        if (c.edgequadtree !== undefined) {
-          c.edgequadtree._enabled = true;
-        }
-      }
-
       // Activate drag graph.
       _renderer.settings({mouseEnabled: true, enableHovering: true});
-      _s.refresh();
 
       if (_drag) {
         _self.dispatchEvent('drop', {
@@ -206,6 +186,16 @@
           captor: event,
           renderer: _renderer
         });
+
+        if(_a) {
+          var activeNodes = _a.nodes();
+          for(var i = 0; i < activeNodes.length; i++) {
+            delete activeNodes[i].alphaX;
+            delete activeNodes[i].alphaY;
+          }
+        }
+
+        _s.refresh();
       }
       _self.dispatchEvent('dragend', {
         node: _node,
@@ -232,49 +222,81 @@
             cos = Math.cos(_camera.angle),
             sin = Math.sin(_camera.angle),
             nodes = _s.graph.nodes(),
-            ref = [];
+            ref = [],
+            x2,
+            y2,
+            activeNodes,
+            n,
+            aux,
+            isHoveredNodeActive,
+            dist;
+
+        if (nodes.length < 2) return;
 
         // Getting and derotating the reference coordinates.
         for (var i = 0; i < 2; i++) {
-          var n = nodes[i];
-          var aux = {
-            x: n.x * cos + n.y * sin,
-            y: n.y * cos - n.x * sin,
-            renX: n[_prefix + 'x'],
-            renY: n[_prefix + 'y'],
-          };
-          ref.push(aux);
+          n = nodes[i];
+          if (n) {
+            aux = {
+              x: n.x * cos + n.y * sin,
+              y: n.y * cos - n.x * sin,
+              renX: n[_prefix + 'x'],
+              renY: n[_prefix + 'y'],
+            };
+            ref.push(aux);
+          }
         }
 
         // Applying linear interpolation.
-        // if the nodes are on top of each other, we use the camera ratio to interpolate
-        if (ref[0].x === ref[1].x && ref[0].y === ref[1].y) {
-          var xRatio = (ref[0].renX === 0) ? 1 : ref[0].renX;
-          var yRatio = (ref[0].renY === 0) ? 1 : ref[0].renY;
-          x = (ref[0].x / xRatio) * (x - ref[0].renX) + ref[0].x;
-          y = (ref[0].y / yRatio) * (y - ref[0].renY) + ref[0].y;
-        } else {
-          var xRatio = (ref[1].renX - ref[0].renX) / (ref[1].x - ref[0].x);
-          var yRatio = (ref[1].renY - ref[0].renY) / (ref[1].y - ref[0].y);
+        x = ((x - ref[0].renX) / (ref[1].renX - ref[0].renX)) *
+          (ref[1].x - ref[0].x) + ref[0].x;
+        y = ((y - ref[0].renY) / (ref[1].renY - ref[0].renY)) *
+          (ref[1].y - ref[0].y) + ref[0].y;
 
-          // if the coordinates are the same, we use the other ratio to interpolate
-          if (ref[1].x === ref[0].x) {
-            xRatio = yRatio;
+        x2 = x * cos - y * sin;
+        y2 = y * cos + x * sin;
+
+        if (_stickiness > 0) {
+          dist = sigma.utils.getDistance(x2, y2, _node.x, _node.y);
+          if (dist < _stickiness) return;
+        }
+
+        // Drag multiple nodes, Keep distance
+        if(_a) {
+          activeNodes = _a.nodes();
+
+          // If hovered node is active, drag active nodes nodes
+          isHoveredNodeActive = (-1 < activeNodes.map(function(node) {
+            return node.id;
+          }).indexOf(_node.id));
+
+          if (isHoveredNodeActive) {
+            for(var i = 0; i < activeNodes.length; i++) {
+              // Delete old reference
+              if(_draggingNode != _node) {
+                activeNodes[i].alphaX = null;
+                activeNodes[i].alphaY = null;
+              }
+
+              // Calcul first position of activeNodes
+              if(!activeNodes[i].alphaX || !activeNodes[i].alphaY) {
+                activeNodes[i].alphaX = activeNodes[i].x - x;
+                activeNodes[i].alphaY = activeNodes[i].y - y;
+              }
+
+              // Move activeNodes to keep same distance between dragged nodes
+              // and active nodes
+              activeNodes[i].x = _node.x + activeNodes[i].alphaX;
+              activeNodes[i].y = _node.y + activeNodes[i].alphaY;
+            }
           }
-
-          if (ref[1].y === ref[0].y) {
-            yRatio = xRatio;
-          }
-
-          x = (x - ref[0].renX) / xRatio + ref[0].x;
-          y = (y - ref[0].renY) / yRatio + ref[0].y;
         }
 
         // Rotating the coordinates.
-        _node.x = x * cos - y * sin;
-        _node.y = y * cos + x * sin;
+        _node.x = x2;
+        _node.y = y2;
 
-        _s.refresh();
+        _s.refresh({skipIndexation: true});
 
         _drag = true;
         _self.dispatchEvent('drag', {
@@ -282,6 +304,8 @@
           captor: event,
           renderer: _renderer
         });
+
+        _draggingNode = _node;
       }
     };
   };
@@ -290,18 +314,20 @@
    * Interface
    * ------------------
    *
-   * > var dragNodesListener = sigma.plugins.dragNodes(s, s.renderers[0]);
+   * > var dragNodesListener = sigma.plugins.dragNodes(s, s.renderers[0], a);
    */
   var _instance = {};
 
   /**
-   * @param  {sigma} s The related sigma instance.
-   * @param  {renderer} renderer The related renderer instance.
+   * @param  {sigma}                      s        The related sigma instance.
+   * @param  {renderer}                   renderer The related renderer instance.
+   * @param  {?sigma.plugins.activeState} a        The activeState plugin instance.
    */
-  sigma.plugins.dragNodes = function(s, renderer) {
+  sigma.plugins.dragNodes = function(s, renderer, a) {
     // Create object if undefined
     if (!_instance[s.id]) {
-      _instance[s.id] = new DragNodes(s, renderer);
+      // Handle drag events:
+      _instance[s.id] = new DragNodes(s, renderer, a);
     }
 
     s.bind('kill', function() {
