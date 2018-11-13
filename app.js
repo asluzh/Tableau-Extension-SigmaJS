@@ -6,7 +6,13 @@ $(document).ready(function() {
         return w.name.substr(0, 5) === "Graph";
       }
     );
-    var renderGraphData = function(dataTable) {
+    const detailWS = tableau.extensions.dashboardContent.dashboard.worksheets.find(
+      function(w) {
+        return w.name.substr(0, 12) === "Nodes Detail";
+      }
+    );
+    var sigmaInstance;
+    var getGraphData = function(dataTable) {
       var g = {
         nodes: [],
         edges: []
@@ -29,7 +35,7 @@ $(document).ready(function() {
       // console.log(nodevalues);
       for (let i = 0; i < nodevalues.length; i++)
         g.nodes.push({
-          id: "n" + nodevalues[i],
+          id: nodevalues[i],
           // label: nodevalues[i],
           x: Math.random(),
           y: Math.random(),
@@ -52,12 +58,17 @@ $(document).ready(function() {
         g.edges.push({
           id: "e" + i,
           // label: "Amount: " + edgelist[i][2],
-          source: "n" + edgelist[i][0],
-          target: "n" + edgelist[i][1],
+          source: edgelist[i][0],
+          target: edgelist[i][1],
           size: edgelist[i][2], //Math.random() * 3 + 1,
           color: "rgba(10,20,30,0.35)",
           type: "arrow" // arrow, curvedArrow
         });
+      return g;
+    };
+
+    inputWs.getSummaryDataAsync().then(function(dataTable) {
+      var g = getGraphData(dataTable);
       // Instantiate sigma:
       // var cont = $("#graph-container");
       // cont.css("background-color", "yellow");
@@ -74,7 +85,7 @@ $(document).ready(function() {
       //   return neighbors;
       // });
 
-      var sigmaInstance = new sigma({
+      sigmaInstance = new sigma({
         graph: g,
         container: "graph-container", //document.getElementById("graph-container"), //
         settings: {
@@ -104,6 +115,7 @@ $(document).ready(function() {
           // drawGlyphs: true,
         }
       });
+      var activeState = sigma.plugins.activeState(sigmaInstance);
 
       sigmaInstance.graph.nodes().forEach(function(n) {
         n.originalColor = n.color;
@@ -113,7 +125,7 @@ $(document).ready(function() {
       });
 
       // Instanciate the ActiveState plugin:
-      var activeState = sigma.plugins.activeState(sigmaInstance);
+      // var activeState = sigma.plugins.activeState(sigmaInstance);
       var keyboard = sigma.plugins.keyboard(
         sigmaInstance,
         sigmaInstance.renderers[0]
@@ -267,102 +279,130 @@ $(document).ready(function() {
       // same for deactivate / reselect node
       sigmaInstance.bind("clickNode", function(e) {
         console.log("click node");
+        // console.log(e.data.node.id);
+        var nodesArray = [];
+        nodesArray.push("" + e.data.node.id);
+        detailWS.applyFilterAsync("node1", nodesArray, "replace", false);
+        if (highlightActive) highlightNodes();
+      });
+
+      sigmaInstance.bind("selectedNodes", function(e) {
+        console.log("selected nodes");
         if (highlightActive) highlightNodes();
       });
 
       // handler for "r" key: re-render graph from scratch
-      // keyboard.bind("82", function() {
-      //   sigmaInstance.kill();
-      //   setTimeout(renderGraphData(dataTable), 100);
-      // });
+      keyboard.bind("82", function() {
+        var g = getGraphData(dataTable);
+        sigmaInstance.graph.clear();
+        sigmaInstance.graph.read(g);
+        sigmaInstance.refresh();
+        sigma.layouts.fruchtermanReingold.start(sigmaInstance);
+      });
 
       // Listen for selectedNodes event
-      lasso.bind("selectedNodes", function(event) {
+      lasso.bind("selectedNodes", function(e) {
         setTimeout(function() {
-          console.log("selectedNodes");
+          console.log("lasso selectedNodes");
+          // console.log(e);
+          var nodesArray = [];
+          e.data.forEach(function(d) {
+            nodesArray.push("" + d.id);
+          });
+          detailWS.applyFilterAsync("node1", nodesArray, "replace", false);
           lasso.deactivate();
           sigmaInstance.refresh({ skipIndexation: true });
         }, 0);
       });
+    }); // end of inputWs.getSummaryDataAsync().then(function(dataTable)
 
-      // // "highlight node" functionality, from sigmajs.org example
-      // // We first need to save the original colors of our
-      // // nodes and edges, like this:
-      // sigmaInstance.graph.nodes().forEach(function(n) {
-      //   n.originalColor = n.color;
-      // });
-      // sigmaInstance.graph.edges().forEach(function(e) {
-      //   e.originalColor = e.color;
-      // });
+    // // "highlight node" functionality, from sigmajs.org example
+    // // We first need to save the original colors of our
+    // // nodes and edges, like this:
+    // sigmaInstance.graph.nodes().forEach(function(n) {
+    //   n.originalColor = n.color;
+    // });
+    // sigmaInstance.graph.edges().forEach(function(e) {
+    //   e.originalColor = e.color;
+    // });
 
-      // // When a node is clicked, we check for each node
-      // // if it is a neighbor of the clicked one. If not,
-      // // we set its color as grey, and else, it takes its
-      // // original color.
-      // // We do the same for the edges, and we only keep
-      // // edges that have both extremities colored.
-      // sigmaInstance.bind("clickNode", function(e) {
-      //   console.log("Node clicked");
-      //   if (e.data.node.active) {
-      //     // run highlight only if node has been just activated (not on deactivate action)
-      //     var nodeId = e.data.node.id;
-      //     var toKeep = sigmaInstance.graph.neighbors(nodeId);
-      //     toKeep[nodeId] = e.data.node;
+    // // When a node is clicked, we check for each node
+    // // if it is a neighbor of the clicked one. If not,
+    // // we set its color as grey, and else, it takes its
+    // // original color.
+    // // We do the same for the edges, and we only keep
+    // // edges that have both extremities colored.
+    // sigmaInstance.bind("clickNode", function(e) {
+    //   console.log("Node clicked");
+    //   if (e.data.node.active) {
+    //     // run highlight only if node has been just activated (not on deactivate action)
+    //     var nodeId = e.data.node.id;
+    //     var toKeep = sigmaInstance.graph.neighbors(nodeId);
+    //     toKeep[nodeId] = e.data.node;
 
-      //     sigmaInstance.graph.nodes().forEach(function(n) {
-      //       if (toKeep[n.id]) n.color = n.originalColor;
-      //       else n.color = "#ddd";
-      //     });
+    //     sigmaInstance.graph.nodes().forEach(function(n) {
+    //       if (toKeep[n.id]) n.color = n.originalColor;
+    //       else n.color = "#ddd";
+    //     });
 
-      //     sigmaInstance.graph.edges().forEach(function(e) {
-      //       if (toKeep[e.source] && toKeep[e.target]) e.color = e.originalColor;
-      //       else e.color = "#ddd";
-      //     });
-      //   } else {
-      //     sigmaInstance.graph.nodes().forEach(function(n) {
-      //       n.color = n.originalColor;
-      //     });
+    //     sigmaInstance.graph.edges().forEach(function(e) {
+    //       if (toKeep[e.source] && toKeep[e.target]) e.color = e.originalColor;
+    //       else e.color = "#ddd";
+    //     });
+    //   } else {
+    //     sigmaInstance.graph.nodes().forEach(function(n) {
+    //       n.color = n.originalColor;
+    //     });
 
-      //     sigmaInstance.graph.edges().forEach(function(e) {
-      //       e.color = e.originalColor;
-      //     });
-      //   }
+    //     sigmaInstance.graph.edges().forEach(function(e) {
+    //       e.color = e.originalColor;
+    //     });
+    //   }
 
-      //   // Since the data has been modified, we need to
-      //   // call the refresh method to make the colors
-      //   // update effective.
-      //   sigmaInstance.refresh();
-      // });
+    //   // Since the data has been modified, we need to
+    //   // call the refresh method to make the colors
+    //   // update effective.
+    //   sigmaInstance.refresh();
+    // });
 
-      // sigmaInstance.bind("clickEdge", function(e) {
-      //   console.log("Edge clicked");
-      // });
-      // // When the stage is clicked, we just color each
-      // // node and edge with its original color.
-      // sigmaInstance.bind("clickStage", function(e) {
-      //   console.log("Empty space clicked");
-      //   sigmaInstance.graph.nodes().forEach(function(n) {
-      //     n.color = n.originalColor;
-      //   });
+    // sigmaInstance.bind("clickEdge", function(e) {
+    //   console.log("Edge clicked");
+    // });
+    // // When the stage is clicked, we just color each
+    // // node and edge with its original color.
+    // sigmaInstance.bind("clickStage", function(e) {
+    //   console.log("Empty space clicked");
+    //   sigmaInstance.graph.nodes().forEach(function(n) {
+    //     n.color = n.originalColor;
+    //   });
 
-      //   sigmaInstance.graph.edges().forEach(function(e) {
-      //     e.color = e.originalColor;
-      //   });
+    //   sigmaInstance.graph.edges().forEach(function(e) {
+    //     e.color = e.originalColor;
+    //   });
 
-      //   // Same as in the previous event:
-      //   sigmaInstance.refresh();
-      // });
-      // ///////////////////////////////////////////////////////////////////////////
+    //   // Same as in the previous event:
+    //   sigmaInstance.refresh();
+    // });
+    // ///////////////////////////////////////////////////////////////////////////
+
+    var updateGraph = function(dataTable) {
+      // TBD
+      // console.log(dataTable);
+      if (sigmaInstance) {
+        var g = getGraphData(dataTable);
+        sigmaInstance.graph.clear();
+        // sigmaInstance.graph.nodes = g.nodes;
+        // sigmaInstance.graph.edges = g.edges;
+        sigmaInstance.graph.read(g);
+        sigmaInstance.refresh();
+        sigma.layouts.fruchtermanReingold.start(sigmaInstance);
+      }
     };
-    var renderGraph = function() {
-      inputWs.getSummaryDataAsync().then(renderGraphData);
-    };
-
     inputWs.addEventListener(
       tableau.TableauEventType.FilterChanged,
       function() {
         console.log("FilterChanged");
-        renderGraph();
+        inputWs.getSummaryDataAsync().then(updateGraph);
       }
     );
     tableau.extensions.dashboardContent.dashboard
@@ -374,13 +414,12 @@ $(document).ready(function() {
               tableau.TableauEventType.ParameterChanged,
               function() {
                 console.log("ParameterChanged");
-                renderGraph();
+                inputWs.getSummaryDataAsync().then(updateGraph);
               }
             );
           }
         });
       });
-    renderGraph();
     // tableau.extensions.dashboardContent.dashboard.worksheets
     //   .find(w => w.name === "Summary Data")
     //   .getSummaryDataAsync()
