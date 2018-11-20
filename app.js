@@ -8,7 +8,7 @@ $(document).ready(function() {
     );
     const detailWS = tableau.extensions.dashboardContent.dashboard.worksheets.find(
       function(w) {
-        return w.name.substr(0, 12) === "Nodes Detail";
+        return w.name.substr(0, 15) === "Account Details";
       }
     );
     var sigmaInstance;
@@ -17,18 +17,34 @@ $(document).ready(function() {
         nodes: [],
         edges: []
       };
-      let node1idx = 0; //dataTable.columns.find(column => column.fieldName === "node1").index;
-      let node2idx = 1; //dataTable.columns.find(column => column.fieldName === "node2").index;
+      let node1idx = dataTable.columns.find(
+        column => column.fieldName === "Account A"
+      ).index;
+      let node1typeidx = dataTable.columns.find(
+        column => column.fieldName === "Client Type A"
+      ).index;
+      let node2idx = dataTable.columns.find(
+        column => column.fieldName === "Account B"
+      ).index;
+      let node2typeidx = dataTable.columns.find(
+        column => column.fieldName === "Client Type B"
+      ).index;
+      // let trxtypeidx = dataTable.columns.find(
+      //   column => column.fieldName === "Max. Transaction Type"
+      // ).index;
       let nodelist = [];
+      let nodetypes = {};
       let edgelist = [];
       for (let i = 0; i < dataTable.data.length; i++) {
         let row = dataTable.data[i];
         nodelist.push(row[node1idx].value);
         nodelist.push(row[node2idx].value);
-        edgelist.push([row[node1idx].value, row[node2idx].value, row[2].value]);
+        nodetypes[row[node1idx].value] = row[node1typeidx].value;
+        nodetypes[row[node2idx].value] = row[node2typeidx].value;
+        edgelist.push([row[node1idx].value, row[node2idx].value, row]);
       }
-      let icons = ["\uF1AD", "\uF007"]; // "\uF187", "\uF021"
-      let colors = ["#338", "#833"];
+      let icons = ["\uF19C", "\uF1AD", "\uF0B1", "\uF183", "\uF007", "\uF0D6"]; // "\uF187", "\uF021"
+      let colors = ["#338", "#833", "#383", "#883", "#388", "#838"];
       let nodevalues = nodelist.filter(function(el, i, arr) {
         return arr.indexOf(el) === i;
       }); // unique
@@ -40,18 +56,37 @@ $(document).ready(function() {
           x: Math.random(),
           y: Math.random(),
           size: Math.random() * 2 + 1,
-          color: colors[Math.floor(Math.random() * colors.length)],
+          color:
+            colors[
+              [
+                "Bank",
+                "Broker",
+                "Corporate",
+                "Employee",
+                "Individual",
+                "Internal Account"
+              ].indexOf(nodetypes[nodevalues[i]]) // mapping from icons array
+            ],
           icon: {
             font: "FontAwesome", // or 'FontAwesome' etc..
-            content: icons[Math.floor(Math.random() * icons.length)], // or custom fontawesome code eg. "\uF129"
+            content:
+              icons[
+                [
+                  "Bank",
+                  "Broker",
+                  "Corporate",
+                  "Employee",
+                  "Individual",
+                  "Internal Account"
+                ].indexOf(nodetypes[nodevalues[i]]) // mapping from icons array
+              ],
             scale: 0.9, // 70% of node size
             color: "#fff" // foreground color (white)
           },
           data: {
-            name: "Jean",
-            gender: "Male",
-            age: 28,
-            city: "Paris"
+            type: nodetypes[nodevalues[i]],
+            status: "Open",
+            open_date: "Date"
           }
         });
       for (let i = 0; i < edgelist.length; i++)
@@ -60,9 +95,14 @@ $(document).ready(function() {
           // label: "Amount: " + edgelist[i][2],
           source: edgelist[i][0],
           target: edgelist[i][1],
-          size: edgelist[i][2], //Math.random() * 3 + 1,
+          size: 1, //Math.random() * 3 + 1,
           color: "rgba(10,20,30,0.35)",
-          type: "arrow" // arrow, curvedArrow
+          type: "arrow", // arrow, curvedArrow
+          data: {
+            type: edgelist[i][2][6].value,
+            amount: "CHF " + edgelist[i][2][4].value,
+            latest_date: edgelist[i][2][5].value
+          }
         });
       return g;
     };
@@ -97,7 +137,7 @@ $(document).ready(function() {
           maxEdgeSize: 3,
           // edgeLabelSize: "proportional",
           // minArrowSize: 1,
-          // enableEdgeHovering: true,
+          enableEdgeHovering: true,
           // edgeHoverSizeRatio: 2,
           edgeHoverExtremities: false, // also highlight nodes on edge hover
           drawLabels: false,
@@ -112,7 +152,7 @@ $(document).ready(function() {
           nodeHaloSize: 10
           // edgeHaloColor: "#ecf0f1",
           // edgeHaloSize: 10
-          // drawGlyphs: true,
+          // drawGlyphs: true
         }
       });
       var activeState = sigma.plugins.activeState(sigmaInstance);
@@ -191,9 +231,10 @@ $(document).ready(function() {
         }
       });
 
-      // handler for "x" key: reset selection
-      keyboard.bind("88", function() {
+      // handler for "escape" key: reset selection
+      keyboard.bind("27", function() {
         console.log("selection reset");
+        tooltips.close();
         activeState.dropNodes();
         sigmaInstance.refresh({ skipIndexation: true });
       });
@@ -201,6 +242,7 @@ $(document).ready(function() {
       // handler for "d" key: delete node
       keyboard.bind("68", function() {
         console.log("delete node(s)");
+        tooltips.close();
         nodesToDrop = [];
         var _nodes = sigmaInstance.graph.nodes();
         // console.log(_nodes.length);
@@ -220,76 +262,77 @@ $(document).ready(function() {
       // handler for "space" key: rerun force algo
       keyboard.bind("32", function() {
         console.log("rerun force");
+        tooltips.close();
         sigma.layouts.fruchtermanReingold.start(sigmaInstance);
       });
 
-      var highlightActive = false;
-      var highlightNodes = function() {
-        var _selectednodes = activeState.nodes();
-        if (_selectednodes.length > 0 && !highlightActive) {
-          // only highlight if at least one node is selected
-          console.log("highlight neighbors");
-          var _highlightnodes = [];
-          var _highlightnodesid = [];
-          _selectednodes.forEach(function(n) {
-            // console.log(n.id);
-            _highlightnodes.push(n);
-            _highlightnodesid.push(n.id);
-            sigmaInstance.graph.adjacentNodes(n.id).forEach(function(adj) {
-              _highlightnodes.push(adj);
-              _highlightnodesid.push(adj.id);
-            });
-          });
-          sigmaInstance.graph.nodes().forEach(function(n) {
-            if (_highlightnodes.indexOf(n) >= 0) n.color = n.originalColor;
-            else n.color = "#ddd";
-          });
-          sigmaInstance.graph.edges().forEach(function(e) {
-            // console.log(e.source);
-            if (
-              _highlightnodesid.indexOf(e.source) >= 0 &&
-              _highlightnodesid.indexOf(e.target) >= 0
-            )
-              e.color = e.originalColor;
-            else e.color = "#ddd";
-          });
-          // console.log(_highlightnodes);
-          highlightActive = true;
+      // var highlightActive = false;
+      // var highlightNodes = function() {
+      //   var _selectednodes = activeState.nodes();
+      //   if (_selectednodes.length > 0 && !highlightActive) {
+      //     // only highlight if at least one node is selected
+      //     console.log("highlight neighbors");
+      //     var _highlightnodes = [];
+      //     var _highlightnodesid = [];
+      //     _selectednodes.forEach(function(n) {
+      //       // console.log(n.id);
+      //       _highlightnodes.push(n);
+      //       _highlightnodesid.push(n.id);
+      //       sigmaInstance.graph.adjacentNodes(n.id).forEach(function(adj) {
+      //         _highlightnodes.push(adj);
+      //         _highlightnodesid.push(adj.id);
+      //       });
+      //     });
+      //     sigmaInstance.graph.nodes().forEach(function(n) {
+      //       if (_highlightnodes.indexOf(n) >= 0) n.color = n.originalColor;
+      //       else n.color = "#ddd";
+      //     });
+      //     sigmaInstance.graph.edges().forEach(function(e) {
+      //       // console.log(e.source);
+      //       if (
+      //         _highlightnodesid.indexOf(e.source) >= 0 &&
+      //         _highlightnodesid.indexOf(e.target) >= 0
+      //       )
+      //         e.color = e.originalColor;
+      //       else e.color = "#ddd";
+      //     });
+      //     // console.log(_highlightnodes);
+      //     highlightActive = true;
 
-          //   if (toKeep[e.source] && toKeep[e.target]) e.color = e.originalColor;
-          //   else e.color = "#ddd";
-          // });
-        } else {
-          sigmaInstance.graph.nodes().forEach(function(n) {
-            n.color = n.originalColor;
-          });
-          sigmaInstance.graph.edges().forEach(function(e) {
-            e.color = e.originalColor;
-          });
-          highlightActive = false;
-        }
-        // Since the data has been modified, we need to
-        // call the refresh method to make the colors
-        // update effective.
-        sigmaInstance.refresh();
-      };
+      //     //   if (toKeep[e.source] && toKeep[e.target]) e.color = e.originalColor;
+      //     //   else e.color = "#ddd";
+      //     // });
+      //   } else {
+      //     sigmaInstance.graph.nodes().forEach(function(n) {
+      //       n.color = n.originalColor;
+      //     });
+      //     sigmaInstance.graph.edges().forEach(function(e) {
+      //       e.color = e.originalColor;
+      //     });
+      //     highlightActive = false;
+      //   }
+      //   // Since the data has been modified, we need to
+      //   // call the refresh method to make the colors
+      //   // update effective.
+      //   sigmaInstance.refresh();
+      // };
 
-      // handler for "h" key: highlight neighbors
-      keyboard.bind("72", highlightNodes);
-      // same for deactivate / reselect node
+      // // handler for "h" key: highlight neighbors
+      // keyboard.bind("72", highlightNodes);
+      // // same for deactivate / reselect node
       sigmaInstance.bind("clickNode", function(e) {
         console.log("click node");
         // console.log(e.data.node.id);
         var nodesArray = [];
         nodesArray.push("" + e.data.node.id);
-        detailWS.applyFilterAsync("node1", nodesArray, "replace", false);
-        if (highlightActive) highlightNodes();
+        // detailWS.applyFilterAsync("Account A", nodesArray, "replace", false);
+        //   if (highlightActive) highlightNodes();
       });
 
-      sigmaInstance.bind("selectedNodes", function(e) {
-        console.log("selected nodes");
-        if (highlightActive) highlightNodes();
-      });
+      // sigmaInstance.bind("selectedNodes", function(e) {
+      //   console.log("selected nodes");
+      //   if (highlightActive) highlightNodes();
+      // });
 
       // handler for "r" key: re-render graph from scratch
       keyboard.bind("82", function() {
@@ -309,10 +352,70 @@ $(document).ready(function() {
           e.data.forEach(function(d) {
             nodesArray.push("" + d.id);
           });
-          detailWS.applyFilterAsync("node1", nodesArray, "replace", false);
+          //detailWS.applyFilterAsync("node1", nodesArray, "replace", false);
           lasso.deactivate();
           sigmaInstance.refresh({ skipIndexation: true });
         }, 0);
+      });
+
+      // Instanciate the tooltips plugin for node tooltips:
+      var tooltips = sigma.plugins.tooltips(
+        sigmaInstance,
+        sigmaInstance.renderers[0],
+        {
+          // tooltip config
+          node: {
+            // show: "overNode",
+            // hide: "outNode",
+            // cssClass: "sigma-tooltip",
+            position: "top",
+            autoadjust: true,
+            template:
+              '<div class="arrow"></div>' +
+              ' <div class="sigma-tooltip-header">Account {{id}}</div>' +
+              '  <div class="sigma-tooltip-body">' +
+              "    <table>" +
+              "      <tr><th>Type</th> <td>{{data.type}}</td></tr>" +
+              "      <tr><th>Status</th> <td>{{data.status}}</td></tr>" +
+              "      <tr><th>Opened in</th> <td>{{data.open_date}}</td></tr>" +
+              "    </table>" +
+              "  </div>" +
+              '  <div class="sigma-tooltip-footer">Comments</div>',
+            renderer: function(node, template) {
+              // node.degree = this.degree(node.id);
+              // Returns an HTML string:
+              return Mustache.render(template, node);
+            }
+          },
+          edge: {
+            // show: "overEdge",
+            // hide: "outEdge",
+            // cssClass: "sigma-tooltip",
+            position: "top",
+            autoadjust: true,
+            template:
+              '<div class="arrow"></div>' +
+              ' <div class="sigma-tooltip-header">Transaction {{id}}</div>' +
+              '  <div class="sigma-tooltip-body">' +
+              "    <table>" +
+              "      <tr><th>Type</th> <td>{{data.type}}</td></tr>" +
+              "      <tr><th>Total Amount</th> <td>{{data.amount}}</td></tr>" +
+              "      <tr><th>Latest Date</th> <td>{{data.latest_date}}</td></tr>" +
+              "    </table>" +
+              "  </div>" +
+              '  <div class="sigma-tooltip-footer">Comments</div>',
+            renderer: function(edge, template) {
+              // return template;
+              return Mustache.render(template, edge);
+            }
+          }
+        }
+      );
+      tooltips.bind("shown", function(event) {
+        console.log("tooltip shown");
+      });
+      tooltips.bind("hidden", function(event) {
+        console.log("tooltip hidden");
       });
     }); // end of inputWs.getSummaryDataAsync().then(function(dataTable)
 

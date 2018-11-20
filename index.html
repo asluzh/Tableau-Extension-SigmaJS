@@ -53,7 +53,8 @@
     <script src="./js/sigma/renderers/canvas/sigma.canvas.labels.def.js"></script>
     <script src="./js/sigma/renderers/canvas/sigma.canvas.hovers.def.js"></script>
     <!--
-      <script src="./js/sigma/renderers/canvas/sigma.canvas.nodes.def.js"></script>
+      don't use the default sigma renderer, use linkurious instead
+       <script src="./js/sigma/renderers/canvas/sigma.canvas.nodes.def.js"></script>
     -->
     <script src="./js/sigma/plugins/sigma.renderers.linkurious/canvas/sigma.canvas.nodes.def.js"></script>
     <script src="./js/sigma/renderers/canvas/sigma.canvas.edges.def.js"></script>
@@ -93,10 +94,17 @@
     <script src="./js/sigma/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.def.js"></script>
     <script src="./js/sigma/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.curve.js"></script>
     <script src="./js/sigma/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.curvedArrow.js"></script>
+
+    <script src="./js/sigma/plugins/sigma.plugins.tooltips/sigma.plugins.tooltips.js"></script>
+    <script src="./js/mustache.min.js"></script>
     <!--
-      <script src="./js/sigma/plugins/sigma.renderers.glyphs/sigma.renderers.glyphs.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.8.1/mustache.min.js"></script>
     -->
+
+    <!-- optionally enable: design, locate, tooltips, legend, leaflet -->
     <!--
+      not using glyphs
+      <script src="./js/sigma/plugins/sigma.renderers.glyphs/sigma.renderers.glyphs.js"></script>
       <script src="./js/sigma/plugins/sigma.renderers.glyphs/settings.js"></script>
     -->
     <script src="./app.js"></script>
@@ -110,13 +118,15 @@
     ></i>
     <div id="container">
       <div id="graph-container"></div>
-      <div id="controls-container">
-        <div><kbd>s</kbd> lasso tool</div>
-        <div><kbd>x</kbd> deselect</div>
-        <div><kbd>d</kbd> remove node(s)</div>
-        <div><kbd>h</kbd> highlight neighbors</div>
-        <div><kbd>spacebar</kbd> re-run force-link</div>
-      </div>
+      <!--
+        <div id="controls-container">
+          <div><kbd>s</kbd> lasso tool</div>
+          <div><kbd>d</kbd> remove node(s)</div>
+          <div><kbd>h</kbd> highlight neighbors</div>
+          <div><kbd>r</kbd> relaunch / reload</div>
+          <div><kbd>spacebar</kbd> re-run layout</div>
+        </div>
+      -->
     </div>
   </body>
 </html>
