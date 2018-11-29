@@ -17,18 +17,18 @@ $(document).ready(function() {
         nodes: [],
         edges: []
       };
-      let node1idx = dataTable.columns.find(
-        column => column.fieldName === "Account A"
-      ).index;
-      let node1typeidx = dataTable.columns.find(
-        column => column.fieldName === "Client Type A"
-      ).index;
-      let node2idx = dataTable.columns.find(
-        column => column.fieldName === "Account B"
-      ).index;
-      let node2typeidx = dataTable.columns.find(
-        column => column.fieldName === "Client Type B"
-      ).index;
+      let node1idx = dataTable.columns.find(function(column) {
+        return column.fieldName === "Account A";
+      }).index;
+      let node1typeidx = dataTable.columns.find(function(column) {
+        return column.fieldName === "Client Type A";
+      }).index;
+      let node2idx = dataTable.columns.find(function(column) {
+        return column.fieldName === "Account B";
+      }).index;
+      let node2typeidx = dataTable.columns.find(function(column) {
+        return column.fieldName === "Client Type B";
+      }).index;
       // let trxtypeidx = dataTable.columns.find(
       //   column => column.fieldName === "Max. Transaction Type"
       // ).index;
@@ -523,14 +523,6 @@ $(document).ready(function() {
           }
         });
       });
-    // tableau.extensions.dashboardContent.dashboard.worksheets
-    //   .find(w => w.name === "Summary Data")
-    //   .getSummaryDataAsync()
-    //   .then(dataTable => {
-    //     for (let row of dataTable.data) {
-    //       console.log(row);
-    //     }
-    //   });
 
     tableau.extensions.settings.addEventListener(
       tableau.TableauEventType.SettingsChanged,
