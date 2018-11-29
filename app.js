@@ -329,18 +329,9 @@ $(document).ready(function() {
         //   if (highlightActive) highlightNodes();
       });
 
-      // sigmaInstance.bind("selectedNodes", function(e) {
-      //   console.log("selected nodes");
-      //   if (highlightActive) highlightNodes();
-      // });
-
       // handler for "r" key: re-render graph from scratch
       keyboard.bind("82", function() {
-        var g = getGraphData(dataTable);
-        sigmaInstance.graph.clear();
-        sigmaInstance.graph.read(g);
-        sigmaInstance.refresh();
-        sigma.layouts.fruchtermanReingold.start(sigmaInstance);
+        inputWs.getSummaryDataAsync().then(updateGraph);
       });
 
       // Listen for selectedNodes event
