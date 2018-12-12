@@ -52,7 +52,7 @@ $(document).ready(function() {
       for (let i = 0; i < nodevalues.length; i++)
         g.nodes.push({
           id: nodevalues[i],
-          // label: nodevalues[i],
+          label: nodevalues[i],
           x: Math.random(),
           y: Math.random(),
           size: Math.random() * 2 + 1,
@@ -92,7 +92,7 @@ $(document).ready(function() {
       for (let i = 0; i < edgelist.length; i++)
         g.edges.push({
           id: "e" + i,
-          // label: "Amount: " + edgelist[i][2],
+          label: "CHF " + Math.round(edgelist[i][2][4].value),
           source: edgelist[i][0],
           target: edgelist[i][1],
           size: 1, //Math.random() * 3 + 1,
@@ -133,36 +133,87 @@ $(document).ready(function() {
           // scalingMode: "inside",
           minNodeSize: 3,
           maxNodeSize: 15,
-          minEdgeSize: 1,
-          maxEdgeSize: 3,
+          minEdgeSize: 2,
+          maxEdgeSize: 2,
           // edgeLabelSize: "proportional",
           // minArrowSize: 1,
           enableEdgeHovering: true,
           // edgeHoverSizeRatio: 2,
           edgeHoverExtremities: false, // also highlight nodes on edge hover
-          drawLabels: false,
+          // drawLabels: false,
           // batchEdgesDrawing: true
-          // labelHoverBGColor: "node"
-          // labelThreshold: 25 // which zoom level is enough to display the labels
+          // labelHoverBGColor: "node",
+          labelThreshold: 8, // which zoom level is enough to display the labels
           borderSize: 1,
           outerBorderSize: 2,
           defaultNodeBorderColor: "#fff",
           defaultNodeOuterBorderColor: "rgb(100, 100, 200)",
           nodeHaloColor: "rgba(100, 100, 200, 0.2)",
-          nodeHaloSize: 10
+          nodeHaloSize: 10,
           // edgeHaloColor: "#ecf0f1",
-          // edgeHaloSize: 10
+          edgeHaloSize: 5,
           // drawGlyphs: true
+          // autoRescale: ["nodeSize", "edgeSize"],
+          zoomingRatio: 1.382,
+          doubleClickZoomingRatio: 1.7,
+          zoomMin: 0.1,
+          zoomMax: 10,
+          //////////////////////////////////////////
+          defaultEdgeType: "tapered",
+          // font: "robotoregular",
+          defaultLabelColor: "#000",
+          defaultLabelSize: 11,
+          // labelThreshold: 8,
+          // labelAlignment: "center",
+          defaultEdgeLabelSize: 11,
+          edgeLabelThreshold: 3,
+          labelHoverShadow: "",
+          edgeLabelHoverShadow: "",
+          maxNodeLabelLineLength: 35,
+          defaultNodeColor: "#999999",
+          nodeBorderColor: "default",
+          hoverFontStyle: "bold",
+          nodeHoverBorderSize: 2,
+          defaultNodeHoverBorderColor: "#ffffff",
+          nodeActiveColor: "node",
+          defaultNodeActiveColor: "#999999",
+          nodeActiveLevel: 3,
+          nodeActiveBorderSize: 2,
+          nodeActiveOuterBorderSize: 4,
+          defaultNodeActiveBorderColor: "#ffffff",
+          defaultNodeActiveOuterBorderColor: "#f65565",
+          nodeHoverLevel: 1,
+          edgeColor: "default",
+          defaultEdgeColor: "#a9a9a9",
+          edgeHoverExtremities: !0,
+          edgeHoverLevel: 1,
+          activeFontStyle: "bold",
+          edgeActiveColor: "default",
+          defaultEdgeActiveColor: "#f65565",
+          edgeActiveLevel: 3,
+          nodeHaloSize: 10,
+          edgeHaloSize: 5,
+          nodeHaloColor: "#ffffff",
+          edgeHaloColor: "#ffffff",
+          nodeHaloStroke: !0,
+          nodeHaloStrokeColor: "#a9a9a9",
+          nodeHaloStrokeWidth: 0.5,
+          // imgCrossOrigin: "anonymous",
+          // legendBorderWidth: 0.5,
+          // legendBorderRadius: 4,
+          // legendBorderColor: "#999999",
+          // doubleClickZoomDuration: 200,
+          // autoRescale: ["nodeSize", "edgeSize"],
+          // doubleClickEnabled: !0,
+          enableEdgeHovering: !0,
+          edgeHoverPrecision: 10,
+          approximateLabelWidth: !0
+          // nodesPowRatio: 0.8,
+          // edgesPowRatio: 0.8,
+          // animationsTime: 1e3
         }
       });
       var activeState = sigma.plugins.activeState(sigmaInstance);
-
-      sigmaInstance.graph.nodes().forEach(function(n) {
-        n.originalColor = n.color;
-      });
-      sigmaInstance.graph.edges().forEach(function(e) {
-        e.originalColor = e.color;
-      });
 
       // Instanciate the ActiveState plugin:
       // var activeState = sigma.plugins.activeState(sigmaInstance);
@@ -220,6 +271,8 @@ $(document).ready(function() {
         });
       });
 
+      // sigma.utils.zoomTo(sigmaInstance.camera, 0, 0, 0.02);
+
       // handler for "s" key: the lasso tool
       keyboard.bind("83", function() {
         if (lasso.isActive) {
@@ -266,60 +319,6 @@ $(document).ready(function() {
         sigma.layouts.fruchtermanReingold.start(sigmaInstance);
       });
 
-      // var highlightActive = false;
-      // var highlightNodes = function() {
-      //   var _selectednodes = activeState.nodes();
-      //   if (_selectednodes.length > 0 && !highlightActive) {
-      //     // only highlight if at least one node is selected
-      //     console.log("highlight neighbors");
-      //     var _highlightnodes = [];
-      //     var _highlightnodesid = [];
-      //     _selectednodes.forEach(function(n) {
-      //       // console.log(n.id);
-      //       _highlightnodes.push(n);
-      //       _highlightnodesid.push(n.id);
-      //       sigmaInstance.graph.adjacentNodes(n.id).forEach(function(adj) {
-      //         _highlightnodes.push(adj);
-      //         _highlightnodesid.push(adj.id);
-      //       });
-      //     });
-      //     sigmaInstance.graph.nodes().forEach(function(n) {
-      //       if (_highlightnodes.indexOf(n) >= 0) n.color = n.originalColor;
-      //       else n.color = "#ddd";
-      //     });
-      //     sigmaInstance.graph.edges().forEach(function(e) {
-      //       // console.log(e.source);
-      //       if (
-      //         _highlightnodesid.indexOf(e.source) >= 0 &&
-      //         _highlightnodesid.indexOf(e.target) >= 0
-      //       )
-      //         e.color = e.originalColor;
-      //       else e.color = "#ddd";
-      //     });
-      //     // console.log(_highlightnodes);
-      //     highlightActive = true;
-
-      //     //   if (toKeep[e.source] && toKeep[e.target]) e.color = e.originalColor;
-      //     //   else e.color = "#ddd";
-      //     // });
-      //   } else {
-      //     sigmaInstance.graph.nodes().forEach(function(n) {
-      //       n.color = n.originalColor;
-      //     });
-      //     sigmaInstance.graph.edges().forEach(function(e) {
-      //       e.color = e.originalColor;
-      //     });
-      //     highlightActive = false;
-      //   }
-      //   // Since the data has been modified, we need to
-      //   // call the refresh method to make the colors
-      //   // update effective.
-      //   sigmaInstance.refresh();
-      // };
-
-      // // handler for "h" key: highlight neighbors
-      // keyboard.bind("72", highlightNodes);
-      // // same for deactivate / reselect node
       sigmaInstance.bind("clickNode", function(e) {
         console.log("click node");
         // console.log(e.data.node.id);
@@ -410,75 +409,6 @@ $(document).ready(function() {
         console.log("tooltip hidden");
       });
     }); // end of inputWs.getSummaryDataAsync().then(function(dataTable)
-
-    // // "highlight node" functionality, from sigmajs.org example
-    // // We first need to save the original colors of our
-    // // nodes and edges, like this:
-    // sigmaInstance.graph.nodes().forEach(function(n) {
-    //   n.originalColor = n.color;
-    // });
-    // sigmaInstance.graph.edges().forEach(function(e) {
-    //   e.originalColor = e.color;
-    // });
-
-    // // When a node is clicked, we check for each node
-    // // if it is a neighbor of the clicked one. If not,
-    // // we set its color as grey, and else, it takes its
-    // // original color.
-    // // We do the same for the edges, and we only keep
-    // // edges that have both extremities colored.
-    // sigmaInstance.bind("clickNode", function(e) {
-    //   console.log("Node clicked");
-    //   if (e.data.node.active) {
-    //     // run highlight only if node has been just activated (not on deactivate action)
-    //     var nodeId = e.data.node.id;
-    //     var toKeep = sigmaInstance.graph.neighbors(nodeId);
-    //     toKeep[nodeId] = e.data.node;
-
-    //     sigmaInstance.graph.nodes().forEach(function(n) {
-    //       if (toKeep[n.id]) n.color = n.originalColor;
-    //       else n.color = "#ddd";
-    //     });
-
-    //     sigmaInstance.graph.edges().forEach(function(e) {
-    //       if (toKeep[e.source] && toKeep[e.target]) e.color = e.originalColor;
-    //       else e.color = "#ddd";
-    //     });
-    //   } else {
-    //     sigmaInstance.graph.nodes().forEach(function(n) {
-    //       n.color = n.originalColor;
-    //     });
-
-    //     sigmaInstance.graph.edges().forEach(function(e) {
-    //       e.color = e.originalColor;
-    //     });
-    //   }
-
-    //   // Since the data has been modified, we need to
-    //   // call the refresh method to make the colors
-    //   // update effective.
-    //   sigmaInstance.refresh();
-    // });
-
-    // sigmaInstance.bind("clickEdge", function(e) {
-    //   console.log("Edge clicked");
-    // });
-    // // When the stage is clicked, we just color each
-    // // node and edge with its original color.
-    // sigmaInstance.bind("clickStage", function(e) {
-    //   console.log("Empty space clicked");
-    //   sigmaInstance.graph.nodes().forEach(function(n) {
-    //     n.color = n.originalColor;
-    //   });
-
-    //   sigmaInstance.graph.edges().forEach(function(e) {
-    //     e.color = e.originalColor;
-    //   });
-
-    //   // Same as in the previous event:
-    //   sigmaInstance.refresh();
-    // });
-    // ///////////////////////////////////////////////////////////////////////////
 
     var updateGraph = function(dataTable) {
       // console.log("updateGraph");

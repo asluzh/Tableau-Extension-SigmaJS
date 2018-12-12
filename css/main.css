@@ -1,17 +1,10 @@
-/* body {
-  --mdc-theme-primary: rgb(52, 152, 219);
-  --mdc-theme-secondary: rgb(45, 204, 151);
-  --mdc-theme-on-primary: #fff;
-  --mdc-theme-on-secondary: #fff;
-  --mdc-theme-background: #fff;
-  --mdc-theme-text-primary-on-background: #000;
-  --mdc-typography-base: "Benton Sans", Arial, Helvetica, sans-serif;
-  background-color: var(--mdc-theme-background);
-  font-family: "Benton Sans", Arial, Helvetica, sans-serif !important;
+body {
+  background-color: #f5f5f5;
+  /* font-family: "Benton Sans", Arial, Helvetica, sans-serif !important;
   font-size: 12px;
   height: 100vh;
-  overflow-y: none;
-} */
+  overflow-y: none; */
+}
 
 #graph-container {
   top: 0;
