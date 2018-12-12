@@ -331,6 +331,7 @@ $(document).ready(function() {
 
       // handler for "r" key: re-render graph from scratch
       keyboard.bind("82", function() {
+        console.log("pressed r");
         inputWs.getSummaryDataAsync().then(updateGraph);
       });
 
@@ -480,16 +481,47 @@ $(document).ready(function() {
     // ///////////////////////////////////////////////////////////////////////////
 
     var updateGraph = function(dataTable) {
-      // TBD
-      // console.log(dataTable);
+      // console.log("updateGraph");
       if (sigmaInstance) {
         var g = getGraphData(dataTable);
-        sigmaInstance.graph.clear();
         // sigmaInstance.graph.nodes = g.nodes;
         // sigmaInstance.graph.edges = g.edges;
+        var nodes = sigmaInstance.graph.nodes();
+        // console.log(nodes);
+        sigmaInstance.graph.clear();
+        nodes.forEach(function(node) {
+          // console.log("looking for node");
+          var targetnode = g.nodes.filter(function(el) {
+            return el.id === node.id;
+          });
+          if (
+            typeof targetnode === "object" &&
+            typeof targetnode[0] === "object"
+          ) {
+            targetnode[0].x = node.x;
+            targetnode[0].y = node.y;
+            targetnode[0].size = node.size;
+            targetnode[0]._replacedcoords = 1;
+            // console.log("changed node attrs");
+          }
+        });
+        newNodes = false;
+        g.nodes.forEach(function(el) {
+          if (el._replacedcoords) {
+            delete el._replacedcoords;
+          } else {
+            newNodes = true;
+          }
+        });
+        // console.log(sigmaInstance.cameras[0]);
         sigmaInstance.graph.read(g);
         sigmaInstance.refresh();
-        sigma.layouts.fruchtermanReingold.start(sigmaInstance);
+        // console.log(sigmaInstance.cameras[0]);
+        // sigmaInstance.cameras[0].goTo({ x: 0, y: 0, angle: 0, ratio: 1 });
+        if (newNodes) {
+          // console.log("new nodes update");
+          sigma.layouts.fruchtermanReingold.start(sigmaInstance);
+        }
       }
     };
     inputWs.addEventListener(
