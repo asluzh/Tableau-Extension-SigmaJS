@@ -1,9 +1,9 @@
 body {
   background-color: #f5f5f5;
-  /* font-family: "Benton Sans", Arial, Helvetica, sans-serif !important;
+  font-family: "Benton Sans", Arial, Helvetica, sans-serif !important;
   font-size: 12px;
   height: 100vh;
-  overflow-y: none; */
+  overflow-y: none;
 }
 
 #graph-container {
@@ -128,7 +128,7 @@ kbd {
   border-left-width: 0;
 }
 
-/* .mdc-select {
+.mdc-select {
   min-width: 200px;
   margin-left: 10px;
 }
@@ -211,4 +211,4 @@ kbd {
 
 .mdc-list {
   font-size: 12px;
-} */
+}
