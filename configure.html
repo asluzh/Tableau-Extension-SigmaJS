@@ -4,185 +4,66 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Configure</title>
-    <link
-      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./css/material-components-web.css" />
-    <link rel="stylesheet" href="./css/main.css" />
-    <script src="./js/jquery.js"></script>
-    <script src="./js/material-components-web.js"></script>
-    <script src="./js/jquery.material-color-picker.min.js"></script>
-    <script src="./js/tableau-extensions-1.latest.min.js"></script>
-    <script src="./configure.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/main.css" />
   </head>
-
-  <body class="mdc-typography">
-    <nav id="basic-tab-bar" class="mdc-tab-bar">
-      <a class="mdc-tab mdc-tab--active" id="configure"
-        >Configure <span class="mdc-tab__indicator"></span
-      ></a>
-      <a class="mdc-tab" id="options"
-        >About <span class="mdc-tab__indicator"></span
-      ></a>
-    </nav>
-    <div class="mdc-card mdc-card--outlined configure-card">
-      <div class="card-content">
-        <div class="mdc-layout-grid">
-          <div class="mdc-layout-grid__inner">
-            <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-              <label class="configSection">Source</label>
-            </div>
-            <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-              <div class="mdc-form-field">
-                <div class="mdc-select" id="sourceSheet">
-                  <select
-                    class="mdc-select__native-control"
-                    id="sourceSheetSelect"
-                  >
-                    <option value="" disabled selected></option>
-                  </select>
-                  <label class="mdc-floating-label">Source Sheet</label>
-                  <div class="mdc-line-ripple"></div>
-                </div>
-              </div>
-            </div>
-            <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-              <div class="mdc-form-field">
-                <div
-                  class="mdc-select"
-                  id="sourceNode"
-                  data-mdc-auto-init="MDCSelect"
-                >
-                  <select
-                    class="mdc-select__native-control"
-                    id="sourceNodeSelect"
-                    disabled
-                  >
-                    <option value="" disabled selected></option>
-                  </select>
-                  <label class="mdc-floating-label">Source Node Field</label>
-                  <div class="mdc-line-ripple"></div>
-                </div>
-              </div>
-            </div>
-            <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-              <div class="mdc-form-field">
-                <div
-                  class="mdc-select"
-                  id="targetNode"
-                  data-mdc-auto-init="MDCSelect"
-                >
-                  <select
-                    class="mdc-select__native-control"
-                    id="targetNodeSelect"
-                    disabled
-                  >
-                    <option value="" disabled selected></option>
-                  </select>
-                  <label class="mdc-floating-label">Target Node Field</label>
-                  <div class="mdc-line-ripple"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="mdc-layout-grid__inner">
-            <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-              <label class="configSection">Display</label>
-            </div>
-            <div
-              class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12"
-              style="height:55px;margin-bottom: 0;"
-            >
-              <div class="mdc-form-field" style="height:55px;"></div>
-              <div
-                class="mdc-text-field mdc-text-field--outlined mdc-text-field--with-leading-icon"
-                id="nodesColorField"
-              >
-                <i
-                  class="material-icons mdc-text-field__icon nodes-color"
-                  tabindex="0"
-                  role="button"
-                  >palette</i
-                >
-                <input
-                  type="text"
-                  id="nodesColor"
-                  class="mdc-text-field__input"
-                  value="rgba(0, 0, 0, .5)"
-                />
-                <label
-                  for="nodesColor"
-                  class="mdc-floating-label"
-                  style="bottom: 7px;"
-                  >Nodes Color</label
-                >
-                <div class="mdc-line-ripple"></div>
-              </div>
-            </div>
-            <div
-              class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12"
-              style="height:55px;margin-bottom: 0;"
-            >
-              <div class="mdc-form-field" style="height:55px;"></div>
-              <div
-                class="mdc-text-field mdc-text-field--outlined mdc-text-field--with-leading-icon"
-                id="edgesColorField"
-              >
-                <i
-                  class="material-icons mdc-text-field__icon edges-color"
-                  tabindex="0"
-                  role="button"
-                  >palette</i
-                >
-                <input
-                  type="text"
-                  id="edgesColor"
-                  class="mdc-text-field__input"
-                  value="rgba(0, 0, 0, .5)"
-                />
-                <label
-                  for="edgesColor"
-                  class="mdc-floating-label"
-                  style="bottom: 7px;"
-                  >Edges Color</label
-                >
-                <div class="mdc-line-ripple"></div>
-              </div>
-            </div>
-          </div>
+  <body>
+    <div class="container">
+      <div class="page-header">
+        <h1>Tableau Extension / <small> Settings</small></h1>
+      </div>
+      <div class="row">
+        <div class="col-md-6 col-xs-6">
+          <span class="dropdown-label">Worksheet Data Source</span>
+          <select id="selectWorksheet" class="select">
+            <option disabled selected="selected">-- None Selected --</option>
+          </select>
         </div>
       </div>
-      <div class="mdc-card__actions mdc-card__actions--full-bleed">
-        <div class="mdc-card__action-buttons">
-          <button
-            class="mdc-button mdc-card__action mdc-card__action--button mdc-theme--secondary resetBtn"
-          >
-            Reset
-          </button>
+      <div class="row">
+        <div class="col-md-6 col-xs-6">
+          <span class="dropdown-label">Field Source Node</span>
+          <select id="selectSourceNode" class="select">
+            <option disabled selected="selected">-- None Selected --</option>
+          </select>
         </div>
       </div>
-    </div>
-    <div
-      class="mdc-card mdc-card--outlined options-card"
-      style="display: none;"
-    >
-      <div class="card-content">
-        <h4 style="margin-bottom:0px;">Settings</h4>
-        <div class="about">
-          <h4>About This Extension</h4>
-          <p>Created by Andrey Sluzhivoy / D ONE</p>
-          <!-- <img src="img/logo.png" style="width: 250px;"/> -->
+      <div class="row">
+        <div class="col-md-6 col-xs-6">
+          <span class="dropdown-label">Field Source Type</span>
+          <select id="selectSourceType" class="select">
+            <option disabled selected="selected">-- None Selected --</option>
+          </select>
         </div>
       </div>
-      <div class="mdc-card__actions mdc-card__actions--full-bleed">
-        <div class="mdc-card__action-buttons"></div>
+      <div class="row">
+        <div class="col-md-6 col-xs-6">
+          <span class="dropdown-label">Field Target Node</span>
+          <select id="selectTargetNode" class="select">
+            <option disabled selected="selected">-- None Selected --</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 col-xs-6">
+          <span class="dropdown-label">Field Target Type</span>
+          <select id="selectTargetType" class="select">
+            <option disabled selected="selected">-- None Selected --</option>
+          </select>
+        </div>
+      </div>
+      <div class="row dialog-buttons">
+        <span id="error"></span>
+        <button id="save" class="btn btn-success">Save</button>
+        <button id="cancel" class="btn btn-danger">Cancel</button>
       </div>
     </div>
   </body>
+  <script type="text/javascript" src="./js/jquery.js"></script>
+  <script type="text/javascript" src="./js/bootstrap.min.js"></script>
+  <script
+    type="text/javascript"
+    src="./js/tableau-extensions-1.latest.min.js"
+  ></script>
+  <script type="text/javascript" src="./configure.js"></script>
 </html>
