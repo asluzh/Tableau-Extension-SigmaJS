@@ -155,7 +155,7 @@
             // doubleClickZoomDuration: 200,
             // autoRescale: ["nodeSize", "edgeSize"],
             // doubleClickEnabled: !0,
-            enableEdgeHovering: !0,
+            // enableEdgeHovering: !0,
             edgeHoverPrecision: 10,
             approximateLabelWidth: !0
             // nodesPowRatio: 0.8,
