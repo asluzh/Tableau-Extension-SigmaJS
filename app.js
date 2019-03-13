@@ -138,7 +138,7 @@
             edgeActiveLevel: 3,
             nodeHaloSize: 10,
             edgeHaloSize: 5,
-            nodeHaloColor: "#ffffff",
+            // nodeHaloColor: "#ffffff",
             edgeHaloColor: "#ffffff",
             nodeHaloStroke: !0,
             nodeHaloStrokeColor: "#a9a9a9",
