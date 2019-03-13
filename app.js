@@ -87,9 +87,7 @@
             maxEdgeSize: 2,
             // edgeLabelSize: "proportional",
             // minArrowSize: 1,
-            enableEdgeHovering: true,
             // edgeHoverSizeRatio: 2,
-            edgeHoverExtremities: false, // also highlight nodes on edge hover
             // drawLabels: false,
             // batchEdgesDrawing: true
             // labelHoverBGColor: "node",
@@ -99,9 +97,6 @@
             defaultNodeBorderColor: "#fff",
             defaultNodeOuterBorderColor: "rgb(100, 100, 200)",
             nodeHaloColor: "rgba(100, 100, 200, 0.2)",
-            nodeHaloSize: 10,
-            // edgeHaloColor: "#ecf0f1",
-            edgeHaloSize: 5,
             // drawGlyphs: true
             // autoRescale: ["nodeSize", "edgeSize"],
             zoomingRatio: 1.382,
@@ -135,7 +130,7 @@
             nodeHoverLevel: 1,
             edgeColor: "default",
             defaultEdgeColor: "#a9a9a9",
-            // edgeHoverExtremities: !0,
+            edgeHoverExtremities: false, // also highlight nodes on edge hover
             edgeHoverLevel: 1,
             activeFontStyle: "bold",
             edgeActiveColor: "default",
@@ -155,7 +150,7 @@
             // doubleClickZoomDuration: 200,
             // autoRescale: ["nodeSize", "edgeSize"],
             // doubleClickEnabled: !0,
-            // enableEdgeHovering: !0,
+            enableEdgeHovering: true,
             edgeHoverPrecision: 10,
             approximateLabelWidth: !0
             // nodesPowRatio: 0.8,
