@@ -135,7 +135,7 @@
             nodeHoverLevel: 1,
             edgeColor: "default",
             defaultEdgeColor: "#a9a9a9",
-            edgeHoverExtremities: !0,
+            // edgeHoverExtremities: !0,
             edgeHoverLevel: 1,
             activeFontStyle: "bold",
             edgeActiveColor: "default",
@@ -408,23 +408,23 @@
               "Internal Account"
             ].indexOf(nodetypes[nodevalues[i]]) // mapping from icons array, TODO
           ],
-        icon: {
-          // TODO idea: make icons optional
-          font: "FontAwesome",
-          content:
-            icons[
-              [
-                "Bank",
-                "Broker",
-                "Corporate",
-                "Employee",
-                "Individual",
-                "Internal Account"
-              ].indexOf(nodetypes[nodevalues[i]]) // mapping from icons array, TODO
-            ],
-          scale: 0.9, // icon is 90% of the node size
-          color: "#fff" // foreground color (white)
-        },
+        // icon: {
+        //   // TODO idea: make icons optional
+        //   font: "FontAwesome",
+        //   content:
+        //     icons[
+        //       [
+        //         "Bank",
+        //         "Broker",
+        //         "Corporate",
+        //         "Employee",
+        //         "Individual",
+        //         "Internal Account"
+        //       ].indexOf(nodetypes[nodevalues[i]]) // mapping from icons array, TODO
+        //     ],
+        //   scale: 0.9, // icon is 90% of the node size
+        //   color: "#fff" // foreground color (white)
+        // },
         data: {
           type: nodetypes[nodevalues[i]],
           status: "Open",
