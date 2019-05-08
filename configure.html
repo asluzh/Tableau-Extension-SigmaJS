@@ -14,8 +14,16 @@
       </div>
       <div class="row">
         <div class="col-md-6 col-xs-6">
-          <span class="dropdown-label">Worksheet Data Source</span>
-          <select id="selectWorksheet" class="select">
+          <span class="dropdown-label">Worksheet Edges</span>
+          <select id="selectWorksheetEdges" class="select">
+            <option disabled selected="selected">-- None Selected --</option>
+          </select>
+        </div>
+      </div>
+      <div class="row pt-2">
+        <div class="col-md-6 col-xs-6">
+          <span class="dropdown-label">Worksheet Nodes</span>
+          <select id="selectWorksheetNodes" class="select">
             <option disabled selected="selected">-- None Selected --</option>
           </select>
         </div>
@@ -23,15 +31,7 @@
       <div class="row pt-2">
         <div class="col-md-6 col-xs-6">
           <span class="dropdown-label">Field Source Node</span>
-          <select id="selectSourceNode" class="select">
-            <option disabled selected="selected">-- None Selected --</option>
-          </select>
-        </div>
-      </div>
-      <div class="row pt-2">
-        <div class="col-md-6 col-xs-6">
-          <span class="dropdown-label">Field Source Type</span>
-          <select id="selectSourceType" class="select">
+          <select id="selectFieldSourceNode" class="select">
             <option disabled selected="selected">-- None Selected --</option>
           </select>
         </div>
@@ -39,17 +39,44 @@
       <div class="row pt-2">
         <div class="col-md-6 col-xs-6">
           <span class="dropdown-label">Field Target Node</span>
-          <select id="selectTargetNode" class="select">
+          <select id="selectFieldTargetNode" class="select">
             <option disabled selected="selected">-- None Selected --</option>
           </select>
         </div>
       </div>
       <div class="row pt-2">
         <div class="col-md-6 col-xs-6">
-          <span class="dropdown-label">Field Target Type</span>
-          <select id="selectTargetType" class="select">
+          <span class="dropdown-label">Field Amount</span>
+          <select id="selectFieldAmount" class="select">
             <option disabled selected="selected">-- None Selected --</option>
           </select>
+        </div>
+      </div>
+      <div class="row pt-2">
+        <div class="col-md-6 col-xs-6">
+          <span class="dropdown-label">Field Node Id</span>
+          <select id="selectFieldNodeId" class="select">
+            <option disabled selected="selected">-- None Selected --</option>
+          </select>
+        </div>
+      </div>
+      <div class="row pt-2">
+        <div class="col-md-6 col-xs-6">
+          <span class="dropdown-label">Field Node Type</span>
+          <select id="selectFieldNodeType" class="select">
+            <option disabled selected="selected">-- None Selected --</option>
+          </select>
+        </div>
+      </div>
+      <div class="row pt-2">
+        <div class="col-md-6 col-xs-6">
+          <span class="label">Colors</span>
+          <textarea
+            name="inputNodeColors"
+            id="inputNodeColors"
+            cols="40"
+            rows="5"
+          ></textarea>
         </div>
       </div>
       <div class="row pt-4 dialog-buttons">
